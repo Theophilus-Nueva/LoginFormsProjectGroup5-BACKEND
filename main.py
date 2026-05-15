@@ -1,8 +1,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-import login
-import signup  
+from routers import login
+from routers import signup
 
 app = FastAPI()
 
