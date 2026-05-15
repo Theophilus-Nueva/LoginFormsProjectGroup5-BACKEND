@@ -8,7 +8,7 @@ import mysql.connector
 # Import your shared database connection
 from database import get_db_connection
 
-router = APIRouter()
+router = APIRouter(prefix="/api/auth", tags=["Signup"])
 
 class UserSignup(BaseModel):
     username: str
