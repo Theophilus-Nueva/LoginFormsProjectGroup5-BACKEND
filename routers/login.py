@@ -11,7 +11,7 @@ from database import get_db_connection
 from utils import send_email_otp 
 
 # Initialize the router
-router = APIRouter()
+router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 # --- PYDANTIC MODELS ---
 class UserLogin(BaseModel):
