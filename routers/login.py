@@ -8,7 +8,7 @@ import mysql.connector
 from database import get_db_connection
 
 # <-- NEW: Import your digital postman from your toolbox
-from utils import send_email_otp 
+from server.utils import send_email_otp 
 
 # Initialize the router
 router = APIRouter()
