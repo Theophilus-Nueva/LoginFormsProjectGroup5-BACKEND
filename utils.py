@@ -22,8 +22,7 @@ def send_email_otp(recipient_email: str, otp_code: str):
     msg.attach(MIMEText(body, 'plain'))
 
     try:
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls() 
+        server = smtplib.SMTP('smtp.gmail.com', 465)
         server.login(sender_email, sender_password)
         server.send_message(msg)
         server.quit()
