@@ -2,6 +2,7 @@
 import os
 import httpx
 from dotenv import load_dotenv
+import asyncio
 
 load_dotenv()
 
@@ -36,9 +37,12 @@ async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
             response = await client.post(url, json=payload, headers=headers)
         
         if response.status_code == 201:
+            print("✅ SUCCESS: Brevo delivered the email!")
             return True
         else:
+            print(f"❌ FAIL: Brevo rejected it. Error: {response.text}")
             return False
             
     except Exception as e:
+        print(f"❌ CRITICAL ERROR: {e}")
         return False
