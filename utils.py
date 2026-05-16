@@ -1,18 +1,13 @@
 # utils.py
 import os
-import smtplib
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import httpx
 from dotenv import load_dotenv
-
-import requests
 
 load_dotenv()
 
-def send_email_otp(recipient_email: str, otp_code: str):
+async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
     api_key = os.getenv("BREVO_API_KEY")
-    
-    sender_email = "your.group5.email@gmail.com" 
+    sender_email = os.getenv("SENDER_EMAIL")
     
     url = "https://api.brevo.com/v3/smtp/email"
     
@@ -37,7 +32,9 @@ def send_email_otp(recipient_email: str, otp_code: str):
     }
     
     try:
-        response = requests.post(url, json=payload, headers=headers)
+        # Using httpx to prevent FastAPI CORS/502 Bad Gateway errors
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, headers=headers)
         
         if response.status_code == 201:
             print("✅ SUCCESS! Brevo sent the email.")
