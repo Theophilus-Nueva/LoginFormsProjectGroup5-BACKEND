@@ -29,7 +29,7 @@ async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
     }
     
     try:
-        response = requests.post(url, json=payload, headers=headers, timeout=10)
-        return response.status_code == 201
+        async with httpx.AsyncClient() as client:
+            response = await client.post(url, json=payload, headers=headers)
     except Exception:
         return False
