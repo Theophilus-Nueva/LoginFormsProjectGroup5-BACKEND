@@ -5,15 +5,16 @@ from pydantic import BaseModel
 import mysql.connector
 
 from database import get_db_connection
-
 from services.email_service import send_email_otp 
 from services.verify_recaptcha import verify_recaptcha
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
+# 1. Fixed: Model now expects the captcha token from React
 class UserLogin(BaseModel):
     email: str
     password: str
+    captcha_token: str 
 
 class VerifyOTP(BaseModel):
     user_id: str
@@ -21,11 +22,13 @@ class VerifyOTP(BaseModel):
 
 @router.post("/login")
 async def login_user(user: UserLogin):
+    # 2. Fixed: Verify status BEFORE touching or opening database resources
+    is_human = await verify_recaptcha(user.captcha_token)
+    if not is_human:
+        raise HTTPException(status_code=400, detail="CAPTCHA verification failed.")
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    if not await verify_recaptcha():
-        raise HTTPException(status_code=401, detail="Not confirmed human!")
     
     try:
         cursor.execute("SELECT user_id, password_hash FROM Users WHERE email = %s", (user.email,))
@@ -53,7 +56,6 @@ async def login_user(user: UserLogin):
         if not email_sent:
             raise HTTPException(status_code=500, detail="Failed to send verification email. Try again later.")
         
-        # 4. Success Response
         return {
             "status": "mfa_required", 
             "user_id": db_user["user_id"],

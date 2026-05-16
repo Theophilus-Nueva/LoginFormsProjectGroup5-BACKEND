@@ -7,23 +7,26 @@ import mysql.connector
 
 # Import your shared database connection
 from database import get_db_connection
-
 from services.verify_recaptcha import verify_recaptcha
 
 router = APIRouter(prefix="/api/auth", tags=["Signup"])
 
+# 1. Fixed: Model now expects the captcha token from React
 class UserSignup(BaseModel):
     username: str
     email: str
     password: str
+    captcha_token: str 
 
 @router.post("/signup")
 async def create_user(user: UserSignup):
+    # 2. Fixed: Verify status BEFORE touching or opening database resources
+    is_human = await verify_recaptcha(user.captcha_token)
+    if not is_human:
+        raise HTTPException(status_code=400, detail="CAPTCHA verification failed.")
+
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
-    
-    if not await verify_recaptcha():
-        raise HTTPException(status_code=401, detail="Not confirmed human!")
     
     try:
         cursor.execute("SELECT email FROM Users WHERE email = %s", (user.email,))
