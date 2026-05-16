@@ -22,7 +22,7 @@ class VerifyOTP(BaseModel):
     code: str
 
 @router.post("/login")
-def login_user(user: UserLogin):
+async def login_user(user: UserLogin):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
@@ -47,7 +47,7 @@ def login_user(user: UserLogin):
         cursor.execute(insert_otp_query, (db_user["user_id"], live_otp))
         conn.commit()
         
-        email_sent = send_email_otp(user.email, live_otp)
+        email_sent = await send_email_otp(user.email, live_otp)
         
         if not email_sent:
             raise HTTPException(status_code=500, detail="Failed to send verification email. Try again later.")
