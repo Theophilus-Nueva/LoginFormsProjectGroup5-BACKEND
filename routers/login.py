@@ -1,5 +1,5 @@
 import hashlib
-import secrets # <-- NEW: Needed for real random numbers
+import secrets 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import mysql.connector
