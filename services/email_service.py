@@ -31,5 +31,13 @@ async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
     try:
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=payload, headers=headers)
+    
+        if response.status_code in [200, 201, 202]:
+                print(f"✅ SUCCESS: Brevo delivered the email! (Status: {response.status_code})")
+                return True
+        else:
+            print(f"❌ FAIL: Brevo rejected it. Error: {response.text}")
+            return False
+    
     except Exception:
         return False
