@@ -7,6 +7,7 @@ import mysql.connector
 from database import get_db_connection
 
 from services.email_service import send_email_otp 
+from services.verify_recaptcha import verify_recaptcha
 
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
@@ -22,6 +23,9 @@ class VerifyOTP(BaseModel):
 async def login_user(user: UserLogin):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    
+    if not verify_recaptcha():
+        raise HTTPException(status_code=401, detail="Not confirmed human!")
     
     try:
         cursor.execute("SELECT user_id, password_hash FROM Users WHERE email = %s", (user.email,))
