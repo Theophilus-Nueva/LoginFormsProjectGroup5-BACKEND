@@ -4,13 +4,10 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import mysql.connector
 
-# Import your shared database connection
 from database import get_db_connection
 
-# <-- NEW: Import your digital postman from your toolbox
-from utils import send_email_otp 
+from services.email_service import send_email_otp 
 
-# Initialize the router
 router = APIRouter(prefix="/api/auth", tags=["Authentication"])
 
 class UserLogin(BaseModel):

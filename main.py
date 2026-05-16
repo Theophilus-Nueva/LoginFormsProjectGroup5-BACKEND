@@ -23,4 +23,4 @@ app.include_router(signup.router)
 
 @app.get("/")
 def read_root():
-    return {"message": "Group 5 Backend is modular, awake, and listening!"}
+    return {"message": "Listening to https://loginformsprojectgroup5-production.up.railway.app"}
