@@ -1,14 +1,21 @@
-# utils.py
 import os
-import httpx
-from dotenv import load_dotenv
-import asyncio
+import requests
 
-load_dotenv()
+# NOTICE: load_dotenv() is COMPLETELY REMOVED. 
+# Railway natively injects variables into the OS. We do not need dotenv in production.
 
-async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
-    api_key = os.getenv("BREVO_API_KEY")
-    sender_email = os.getenv("SENDER_EMAIL")
+def send_email_otp(recipient_email: str, otp_code: str) -> bool:
+    # os.environ.get forces Python to look at the Railway OS directly
+    api_key = os.environ.get("BREVO_API_KEY", "").strip()
+    sender_email = os.environ.get("SENDER_EMAIL", "loginformsprojectgroup5@gmail.com").strip()
+    
+    # EXTREME DEBUGGING: Let's see exactly what the server sees
+    print("\n--- SERVER OS VARIABLE CHECK ---")
+    if not api_key:
+        print("❌ FATAL: API Key is completely blank. Railway is hiding it.")
+    else:
+        print(f"✅ API Key found! Length: {len(api_key)} characters (Should be around 74)")
+    print("--------------------------------\n")
     
     url = "https://api.brevo.com/v3/smtp/email"
     
@@ -23,21 +30,16 @@ async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
             "name": "Group 5 Security",
             "email": sender_email
         },
-        "to": [
-            {
-                "email": recipient_email
-            }
-        ],
+        "to": [{"email": recipient_email}],
         "subject": "Group 5 Project - Your Security Code",
-        "htmlContent": f"<html><body><h3>Hello!</h3><p>Your Multi-Factor Authentication code is: <strong style='font-size: 24px;'>{otp_code}</strong></p><p>This code will expire in 10 minutes.</p><p>Securely,<br>Group 5 Security</p></body></html>"
+        "htmlContent": f"<html><body><h3>Hello!</h3><p>Your Multi-Factor Authentication code is: <strong style='font-size: 24px;'>{otp_code}</strong></p></body></html>"
     }
     
     try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(url, json=payload, headers=headers)
+        response = requests.post(url, json=payload, headers=headers, timeout=10)
         
         if response.status_code == 201:
-            print("✅ SUCCESS: Brevo delivered the email!")
+            print(f"✅ SUCCESS: Brevo delivered the email to {recipient_email}!")
             return True
         else:
             print(f"❌ FAIL: Brevo rejected it. Error: {response.text}")
