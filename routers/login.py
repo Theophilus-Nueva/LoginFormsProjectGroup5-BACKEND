@@ -24,7 +24,7 @@ async def login_user(user: UserLogin):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
-    if not verify_recaptcha():
+    if not await verify_recaptcha():
         raise HTTPException(status_code=401, detail="Not confirmed human!")
     
     try:

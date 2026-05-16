@@ -8,6 +8,8 @@ import mysql.connector
 # Import your shared database connection
 from database import get_db_connection
 
+from services.verify_recaptcha import verify_recaptcha
+
 router = APIRouter(prefix="/api/auth", tags=["Signup"])
 
 class UserSignup(BaseModel):
@@ -16,9 +18,12 @@ class UserSignup(BaseModel):
     password: str
 
 @router.post("/signup")
-def create_user(user: UserSignup):
+async def create_user(user: UserSignup):
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
+    
+    if not await verify_recaptcha():
+        raise HTTPException(status_code=401, detail="Not confirmed human!")
     
     try:
         cursor.execute("SELECT email FROM Users WHERE email = %s", (user.email,))
