@@ -6,9 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
-    raw_api_key = os.getenv("BREVO_API_KEY", "")
-    api_key = raw_api_key.replace('"', '').replace("'", "").strip()
-    sender_email = os.getenv("SENDER_EMAIL", "loginformsprojectgroup5@gmail.com").strip()
+    api_key = os.getenv("BREVO_API_KEY")
+    sender_email = os.getenv("SENDER_EMAIL")
     
     url = "https://api.brevo.com/v3/smtp/email"
     
@@ -33,11 +32,9 @@ async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
             response = await client.post(url, json=payload, headers=headers)
     
         if response.status_code in [200, 201, 202]:
-                print(f"✅ SUCCESS: Brevo delivered the email! (Status: {response.status_code})")
-                return True
+            return True #SUCCESS
         else:
-            print(f"❌ FAIL: Brevo rejected it. Error: {response.text}")
-            return False
+            return False #ERROR
     
     except Exception:
         return False
