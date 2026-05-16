@@ -32,17 +32,13 @@ async def send_email_otp(recipient_email: str, otp_code: str) -> bool:
     }
     
     try:
-        # Using httpx to prevent FastAPI CORS/502 Bad Gateway errors
         async with httpx.AsyncClient() as client:
             response = await client.post(url, json=payload, headers=headers)
         
         if response.status_code == 201:
-            print("✅ SUCCESS! Brevo sent the email.")
             return True
         else:
-            print(f"❌ FAILED! Brevo error: {response.text}")
             return False
             
     except Exception as e:
-        print(f"❌ CRITICAL HTTP ERROR: {e}")
         return False
