@@ -19,6 +19,10 @@ def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
              
         delete_query = "DELETE FROM `2_factor_authentication_code` WHERE user_id = %s"
         cursor.execute(delete_query, (user_id,))
+        
+        activate_query = "UPDATE Users SET is_email_verified = TRUE WHERE user_id = %s"
+        cursor.execute(activate_query, (user_id,))
+        
         conn.commit()
         
         return {
@@ -27,9 +31,7 @@ def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
         }
 
     except mysql.connector.Error as err:
-        print(f"OTP VERIFY DB ERROR: {str(err)}")
         raise HTTPException(status_code=500, detail="Internal server database error.")
-        
     finally:
         cursor.close()
         conn.close()

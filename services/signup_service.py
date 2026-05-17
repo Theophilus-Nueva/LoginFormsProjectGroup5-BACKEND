@@ -1,11 +1,12 @@
 import uuid
-import secrets
 import bcrypt
 import mysql.connector
 from fastapi import HTTPException
 from database import get_db_connection
 
-def register_new_user(username: str, email: str, password: str) -> dict:
+from services.otp_service import generate_and_dispatch_otp
+
+async def register_new_user(username: str, email: str, password: str) -> dict:
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
     
@@ -23,20 +24,13 @@ def register_new_user(username: str, email: str, password: str) -> dict:
             VALUES (%s, %s, %s, %s, FALSE)
         """
         cursor.execute(insert_user_query, (new_user_id, username, email, hashed_password.decode('utf-8')))
-        
-        verification_token = secrets.token_urlsafe(32)
-        insert_token_query = """
-            INSERT INTO Verification_Tokens (token, user_id, expires_at)
-            VALUES (%s, %s, DATE_ADD(NOW(), INTERVAL 1 DAY))
-        """
-        cursor.execute(insert_token_query, (verification_token, new_user_id))
-        
         conn.commit()
         
+        await generate_and_dispatch_otp(new_user_id, email)
+        
         return {
-            "status": "success",
-            "message": "User created successfully! Please check your email to verify your account.",
-            "mock_token_for_testing": verification_token 
+            "status": "pending_verification",
+            "message": "Account created! Please check your email for your 6-digit verification code."
         }
 
     except mysql.connector.Error as err:
