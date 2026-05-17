@@ -30,6 +30,7 @@ async def register_new_user(username: str, email: str, password: str) -> dict:
         
         return {
             "status": "pending_verification",
+            "user_id": new_user_id,
             "message": "Account created! Please check your email for your 6-digit verification code."
         }
 
