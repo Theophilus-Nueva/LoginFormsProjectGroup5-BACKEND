@@ -17,6 +17,6 @@ async def create_user(user: UserSignup):
     
     await verify_recaptcha(user.captcha_token)
     
-    success_response = register_new_user(user.username, user.email, user.password)
+    success_response = await register_new_user(user.username, user.email, user.password)
     
     return success_response
