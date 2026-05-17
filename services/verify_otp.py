@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from database import get_db_connection
 
 from services.security import create_access_token
+from services.audit import log_auth_event 
 
 def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
     conn = get_db_connection()
@@ -17,6 +18,7 @@ def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
         valid_otp = cursor.fetchone()
         
         if not valid_otp:
+             log_auth_event(email="OTP Validation", event_type="MFA_FAILED_INVALID_CODE", user_id=user_id)
              raise HTTPException(status_code=401, detail="Invalid or expired verification code.")
              
         delete_query = "DELETE FROM `2_factor_authentication_code` WHERE user_id = %s"
@@ -26,6 +28,9 @@ def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
         cursor.execute(activate_query, (user_id,))
         
         conn.commit()
+        
+        # 3. Log the success before sending the token
+        log_auth_event(email="User Verified", event_type="MFA_SUCCESS", user_id=user_id)
         
         return {
             "status": "success", 
