@@ -14,6 +14,7 @@ async def verify_otp(request_data: VerifyOTPRequest, request: Request):
     success_response = validate_and_consume_otp(
         user_id=request_data.user_id,
         otp_code=request_data.otp_code
+        request=request
     )
     
     return success_response
