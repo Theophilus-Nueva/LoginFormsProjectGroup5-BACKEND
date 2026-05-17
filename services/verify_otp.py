@@ -2,6 +2,8 @@ import mysql.connector
 from fastapi import HTTPException
 from database import get_db_connection
 
+from services.security import create_access_token
+
 def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
     conn = get_db_connection()
     cursor = conn.cursor(dictionary=True)
@@ -27,6 +29,7 @@ def validate_and_consume_otp(user_id: str, otp_code: str) -> dict:
         
         return {
             "status": "success", 
+            "access_token": create_access_token(user_id),
             "message": "Authentication complete! Logging you in..."
         }
 
