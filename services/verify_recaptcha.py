@@ -1,28 +1,27 @@
 import os
 import httpx
+from fastapi import HTTPException
 
-async def verify_recaptcha(token: str) -> bool:
-    """
-    Sends the frontend reCAPTCHA token to Google's API.
-    Returns True if the user is verified as a human, False otherwise.
-    """
-    secret_key = os.getenv("RECAPTCHA_SECRET")
-    
-    if not secret_key:
+VERIFY_URL = "https://www.google.com/recaptcha/api/siteverify"
+SECRET_KEY = os.getenv("RECAPTCHA_SECRET")
+
+async def is_recaptcha_verified(token: str) -> bool:
+    if not SECRET_KEY:
         print("SECURITY WARNING: RECAPTCHA_SECRET environment variable is completely missing!")
         return False
-
-    verify_url = "https://www.google.com/recaptcha/api/siteverify"
-    
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.post(verify_url, data={
-                "secret": secret_key,
+            response = await client.post(VERIFY_URL, data={
+                "secret": SECRET_KEY,
                 "response": token
             })
             result = response.json()
             return result.get("success", False)
-            
     except Exception as e:
         print(f"reCAPTCHA Connection/API Error: {str(e)}")
         return False
+    
+async def verify_recaptcha(token: str) -> None:
+    if not await is_recaptcha_verified(token):
+        raise HTTPException(status_code=400, detail="CAPTCHA verification failed.")
+    
