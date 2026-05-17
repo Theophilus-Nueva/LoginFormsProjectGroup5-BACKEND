@@ -4,6 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from routers import login
 from routers import signup
 from routers import dashboard
+from routers import OTP
 
 app = FastAPI()
 
@@ -22,6 +23,7 @@ app.add_middleware(
 app.include_router(login.router)
 app.include_router(signup.router) 
 app.include_router(dashboard.router)
+app.include_router(OTP.router)
 
 @app.get("/")
 def read_root():
